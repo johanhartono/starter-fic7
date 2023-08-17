@@ -1,0 +1,79 @@
+Install Mysql/mariadb
+sudo apt-get update
+sudo apt install mariadb-server mariadb-client
+sudo mysql_secure_installation
+Enter current password for root: (Enter your SSH root user password)
+-Switch to unix_socket authentication [Y/n]: Y
+-Change the root password? [Y/n]: Y
+It will ask you to set new MySQL root password at this step. This can be different from the SSH root user password.
+-Remove anonymous users? [Y/n] Y
+-Disallow root login remotely? [Y/n]: N
+This is set as N because we might want to access the database from a remote server for using business analytics 
+software like Metabase / PowerBI / Tableau, etc.
+-Remove test database and access to it? [Y/n]: Y
+-Reload privilege tables now? [Y/n]: Y
+
+sudo apt install nginx
+sudo systemctl status apache2
+
+sudo apt install php php-cli php-fpm php-json php-common php-mysql php-zip php-gd php-mbstring php-curl php-xml php-pear php-bcmath
+sudo apt install curl php-cli php-mbstring git unzip
+
+curl -sS https://getcomposer.org/installer -o composer-setup.php
+sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+
+sudo apt purge apache2
+sudo apt autoremove
+
+sudo systemctl status nginx
+
+cd /var/www
+sudo git clone https://github.com/bahrie127/starter-fic7.git
+
+cd starter-fic7
+sudo cp .env.example .env
+sudo nano .env 
+
+sudo composer install
+sudo php artisan key:generate
+sudo chmod -R 775 storage bootstrap/cache
+sudo chown -R www-data:www-data storage bootstrap/cache
+
+sudo nao /etc/nginx/sites-available/laravelapp
+
+server {
+ listen 80;
+ server_name domain-anda.id www.domain-anda.id;
+ root /var/www/starter-fic7/public;
+ index index.php;
+ location / {
+ try_files $uri $uri/ /index.php?$query_string;
+ }
+ location ~ \.php$ {
+ include snippets/fastcgi-php.conf;
+ fastcgi_pass unix:/var/run/php/php8.1-fpm.sock; # Sesuaikan versi PHP jika berbeda
+ }
+}
+
+sudo ln -sf /etc/nginx/sites-available/laravelapp /etc/nginx/sites-enabled/
+
+sudo nginx -t
+sudo systemctl reload nginx
+
+
+sudo snap install core; sudo snap refresh core
+sudo apt remove certbot
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+sudo ufw status
+sudo ufw enable
+sudo ufw allow 'OpenSSH'
+sudo ufw allow 'Nginx Full'
+sudo ufw delete allow 'Nginx HTTP'
+sudo ufw status
+sudo certbot --nginx -d domainanda.my.id -d www.domainanda.my.id
+sudo systemctl status snap.certbot.renew.service
+sudo certbot renew --dry-run
+
+sudo nginx -t
+sudo systemctl reload nginx
